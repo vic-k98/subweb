@@ -5,12 +5,12 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: "/",
+    path: "/SubConverter",
     name: "SubConverter",
     component: () => import("../views/Subconverter.vue")
   },
   {
-    path: "/qx2clash",
+    path: "/",
     name: "Qx2clash",
     component: () => import("../views/Qx2clash.vue")
   }
