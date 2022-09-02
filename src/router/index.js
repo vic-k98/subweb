@@ -5,19 +5,19 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: "/SubConverter",
+    path: "/",
     name: "SubConverter",
     component: () => import("../views/Subconverter.vue")
   },
   {
-    path: "/",
+    path: "/Qx2clash",
     name: "Qx2clash",
     component: () => import("../views/Qx2clash.vue")
   }
 ];
 
 const router = new VueRouter({
-  mode: "history",
+  mode: "hash",
   base: process.env.BASE_URL,
   routes
 });
