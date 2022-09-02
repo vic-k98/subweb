@@ -6,7 +6,7 @@ const G_URL_shortUrlBackend = process.env.VUE_APP_MYURLS_DEFAULT_BACKEND + '/sho
 const G_URL_configUploadBackend = process.env.VUE_APP_CONFIG_UPLOAD_BACKEND + '/config/upload'
 const G_URL_defaultBackendSub = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/sub?'
 const G_URL_defaultBackendVerson = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/version'
-
+const G_URL_defaultQx2ClashBackend = 'http://192.168.31.99:3000'
 
 const G_clientTypes = {
   "Clash新参数": "clash&new_name=true",
@@ -115,7 +115,8 @@ const G_URL = {
   G_URL_shortUrlBackend,
   G_URL_configUploadBackend,
   G_URL_defaultBackendSub,
-  G_URL_defaultBackendVerson
+  G_URL_defaultBackendVerson,
+  G_URL_defaultQx2ClashBackend
 }
 
 export const G_DEFAULT_CONFIG = {

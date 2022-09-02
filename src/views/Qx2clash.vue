@@ -689,7 +689,7 @@ export default {
 
       this.handlerUploadFn({
         data,
-        url: 'http://127.0.0.1:3000/upload', 
+        url: G_CONFIG.G_URL_defaultQx2ClashBackend + '/upload', 
         callback: (res) => {
           if (res) return upload.onSuccess();
           upload.onError();
@@ -706,7 +706,7 @@ export default {
       });
 
       this.$axios
-        .post('http://127.0.0.1:3000/make', this.form, {
+        .post(G_CONFIG.G_URL_defaultQx2ClashBackend + '/make', this.form, {
           header:{
             "Content-Type": "application/form-data; charset=utf-8"
           }
