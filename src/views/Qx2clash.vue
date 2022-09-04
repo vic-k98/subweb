@@ -224,7 +224,6 @@
                   v-if="['3'].includes(advanced)"
                   style="width: 120px"
                   type="danger"
-                  :loading="loading"
                   :disabled="customSubUrl.length === 0"
                   @click="handleSubYaml"
                 >生成yaml文件</el-button>
@@ -722,7 +721,12 @@ export default {
     },
 
     handleSubYaml () {
-      this.loading = true;
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       this.$axios
         .post(G_CONFIG.G_URL_defaultQx2ClashBackendLocalyaml, {
           sublink: this.customSubUrl
@@ -730,8 +734,7 @@ export default {
         .then(res => {
           if (res.data.code === 0 && res.data.data.url !== "") {
             this.$message.success("远程配置文件已生成，配置链接已复制到剪贴板，有效期三个月望知悉");
-            
-            console.log(res.data.data.url);
+  
             this.$copyText(res.data.data.url);
           } else {
             this.$message.error("配置生成失败: " + res.data.msg);
@@ -741,7 +744,7 @@ export default {
           this.$message.error("配置生成失败");
         })
         .finally(() => {
-          this.loading = false;
+          loading.close();
         });
     }
   }
