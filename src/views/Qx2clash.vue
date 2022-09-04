@@ -18,80 +18,11 @@
                 <el-radio v-model="advanced" label="3">Quantumult X 配置一键生成</el-radio>
               </el-form-item>
 
-              <!-- 基础配置 -->
-              <template v-if="['1', '2'].includes(advanced)">
-                <el-form-item label="订阅链接:">
-                  <el-input
-                    v-model="form.sourceSubUrl"
-                    type="textarea"
-                    rows="3"
-                    placeholder="支持订阅或ss/ssr/vmess链接，多个链接每行一个或用 | 分隔"
-                    @blur="saveSubUrl"
-                  />
-                </el-form-item>
-
-                <el-form-item label="客户端:">
-                  <el-select v-model="form.clientType" style="width: 100%">
-                    <el-option v-for="(v, k) in options.clientTypes" :key="k" :label="k" :value="v"></el-option>
-                  </el-select>
-                </el-form-item>
-
-                <el-form-item label="后端地址:">
-                  <!-- <el-autocomplete
-                    style="width: 100%"
-                    v-model="form.customBackend"
-                    :fetch-suggestions="backendSearch"
-                    placeholder="动动小手，（建议）自行搭建后端服务。例：http://127.0.0.1:25500/sub?"
-                  >
-                    <el-button slot="append" @click="gotoGayhub" icon="el-icon-link">前往项目仓库</el-button>
-                  </el-autocomplete> -->
-
-                  <el-select
-                    v-model="form.customBackend"
-                    allow-create
-                    filterable
-                    placeholder="请选择或输入：http://www.mayworld98.com/sub?"
-                    style="width: 100%"
-                  >
-                    <el-option
-                      v-for="(value, key) in options.customBackendOptions"
-                      :key="key"
-                      :label="key"
-                      :value="value"
-                    ></el-option>
-                  </el-select>
-                </el-form-item>
-                
-                <el-form-item label="远程配置:">
-                  <el-select
-                    v-model="form.remoteConfig"
-                    allow-create
-                    filterable
-                    placeholder="请选择"
-                    style="width: 100%"
-                  >
-                    <el-option-group
-                      v-for="group in options.remoteConfig"
-                      :key="group.label"
-                      :label="group.label"
-                    >
-                      <el-option
-                        v-for="item in group.options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                      ></el-option>
-                    </el-option-group>
-                    <el-button slot="append" @click="gotoRemoteConfig" icon="el-icon-link">配置示例</el-button>
-                  </el-select>
-                </el-form-item>
-              </template>
-
-              <template v-else>
+              <template v-if="['3'].includes(advanced)">
                 <el-form-item label="配置文件:">
                   <el-upload
                     ref="upload"
-                    class="upload-demo"
+                    class="upload"
                     action=""
                     accept=".conf"
                     :file-list="configFileList"
@@ -100,13 +31,92 @@
                     :on-change="handleUploadChange"
                     :on-exceed="handleUploadExceed"
                   >
-                    <el-button size="small" type="primary">点击上传</el-button>
+                    <el-button
+                      slot="trigger"
+                      size="small"
+                      type="primary"
+                      :loading="loading"
+                    >点击上传</el-button>
+                    <el-button
+                      style="margin-left: 10px;"
+                      size="small"
+                      type="success"
+                      :disabled="!configFileList.length"
+                      :loading="loading"
+                      @click="handlerMakeQx2clash"
+                    >生成远程配置文件</el-button>
                     <!-- <div slot="tip" class="el-upload__tip">只能上传.conf文件, 默认取第一个上传成功的文件</div> -->
                   </el-upload>
                 </el-form-item>
               </template>
 
-              <!-- 高级配置 -->
+              <!-- 基础配置 -->
+              <el-form-item label="订阅链接:">
+                <el-input
+                  v-model="form.sourceSubUrl"
+                  type="textarea"
+                  rows="3"
+                  placeholder="支持订阅或ss/ssr/vmess链接，多个链接每行一个或用 | 分隔"
+                  @blur="saveSubUrl"
+                />
+              </el-form-item>
+
+              <el-form-item label="客户端:">
+                <el-select v-model="form.clientType" style="width: 100%">
+                  <el-option v-for="(v, k) in options.clientTypes" :key="k" :label="k" :value="v"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="后端地址:">
+                <!-- <el-autocomplete
+                  style="width: 100%"
+                  v-model="form.customBackend"
+                  :fetch-suggestions="backendSearch"
+                  placeholder="动动小手，（建议）自行搭建后端服务。例：http://127.0.0.1:25500/sub?"
+                >
+                  <el-button slot="append" @click="gotoGayhub" icon="el-icon-link">前往项目仓库</el-button>
+                </el-autocomplete> -->
+
+                <el-select
+                  v-model="form.customBackend"
+                  allow-create
+                  filterable
+                  placeholder="请选择或输入：http://www.mayworld98.com/sub?"
+                  style="width: 100%"
+                >
+                  <el-option
+                    v-for="(value, key) in options.customBackendOptions"
+                    :key="key"
+                    :label="key"
+                    :value="value"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="远程配置:">
+                <el-select
+                  v-model="form.remoteConfig"
+                  allow-create
+                  filterable
+                  placeholder="请选择"
+                  style="width: 100%"
+                >
+                  <el-option-group
+                    v-for="group in options.remoteConfig"
+                    :key="group.label"
+                    :label="group.label"
+                  >
+                    <el-option
+                      v-for="item in group.options"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    ></el-option>
+                  </el-option-group>
+                </el-select>
+              </el-form-item>
+
+              <!-- 进阶 -->
               <div v-if="['2', '3'].includes(advanced)">
                 <el-form-item label="Include:">
                   <el-input v-model="form.includeRemarks" placeholder="节点名包含的关键字，支持正则" />
@@ -182,48 +192,43 @@
                 </el-input>
               </el-form-item>
 
-              <template v-if="['1', '2'].includes(advanced)">
-                <el-form-item label="订阅短链:">
-                  <el-input class="copy-content" disabled v-model="curtomShortSubUrl">
-                    <el-button
-                      slot="append"
-                      v-clipboard:copy="curtomShortSubUrl"
-                      v-clipboard:success="onCopy"
-                      ref="copy-btn"
-                      icon="el-icon-document-copy"
-                    >复制</el-button>
-                  </el-input>
-                </el-form-item>
-              </template>
+              <el-form-item label="订阅短链:">
+                <el-input class="copy-content" disabled v-model="curtomShortSubUrl">
+                  <el-button
+                    slot="append"
+                    v-clipboard:copy="curtomShortSubUrl"
+                    v-clipboard:success="onCopy"
+                    ref="copy-btn"
+                    icon="el-icon-document-copy"
+                  >复制</el-button>
+                </el-input>
+              </el-form-item>
 
               <!-- 操作 -->
-              <template v-if="['1', '2'].includes(advanced)">
-                <el-form-item label-width="0px" style="margin-top: 40px; text-align: center">
-                  <el-button
-                    style="width: 120px"
-                    type="danger"
-                    @click="makeUrl"
-                    :disabled="form.sourceSubUrl.length === 0"
-                  >生成订阅链接</el-button>
-                  <el-button
-                    style="width: 120px"
-                    type="danger"
-                    @click="makeShortUrl"
-                    :loading="loading"
-                    :disabled="customSubUrl.length === 0"
-                  >生成短链接</el-button>
-                </el-form-item>
-              </template>
-              <template v-else >
-                <el-form-item label-width="0px" style="margin-top: 40px; text-align: center">
-                  <el-button
-                    style="width: 120px"
-                    type="danger"
-                    @click="makeUrl"
-                    :disabled="!form.remoteConfig"
-                  >生成订阅链接</el-button>
-                </el-form-item>
-              </template>
+              <el-form-item label-width="0px" style="margin-top: 40px; text-align: center">
+                <el-button
+                  style="width: 120px"
+                  type="danger"
+                  @click="makeUrl"
+                  :disabled="form.sourceSubUrl.length === 0"
+                >生成订阅链接</el-button>
+                <el-button
+                  style="width: 120px"
+                  type="danger"
+                  @click="makeShortUrl"
+                  :loading="loading"
+                  :disabled="customSubUrl.length === 0"
+                >生成短链接</el-button>
+
+                <el-button
+                  v-if="['3'].includes(advanced)"
+                  style="width: 120px"
+                  type="danger"
+                  :loading="loading"
+                  :disabled="customSubUrl.length === 0"
+                  @click="handleSubYaml"
+                >生成yaml文件</el-button>
+              </el-form-item>
 
               <el-form-item 
                 v-if="['1', '2'].includes(advanced)"
@@ -400,9 +405,7 @@ export default {
     gotoGayhub() {
       window.open(G_CONFIG.G_URL_gayhubRelease);
     },
-    gotoRemoteConfig() {
-      window.open(G_CONFIG.G_URL_remoteConfigSample);
-    },
+
     clashInstall() {
       if (this.customSubUrl === "") {
         this.$message.error("请先填写必填项，生成订阅链接");
@@ -429,12 +432,6 @@ export default {
       window.open(url + this.customSubUrl);
     },
     makeUrl() {
-      if (['3'].includes(this.advanced)) {
-        this.handlerMakeQx2clash();
-        return;
-      }
-
-
       if (this.form.sourceSubUrl === "" || this.form.clientType === "") {
         this.$message.error("订阅链接与客户端为必填项");
         return false;
@@ -649,13 +646,13 @@ export default {
               "远程配置上传成功，配置链接已复制到剪贴板，有效期三个月望知悉"
             );
 
+            if (callback) return callback(res.data.data.url);
+
             // 自动填充至『表单-远程配置』
             this.form.remoteConfig = res.data.data.url;
             this.$copyText(this.form.remoteConfig);
 
             this.dialogUploadConfigVisible = false;
-
-            callback && callback(1);
           } else {
             this.$message.error("远程配置上传失败: " + res.data.msg);
 
@@ -689,7 +686,7 @@ export default {
 
       this.handlerUploadFn({
         data,
-        url: G_CONFIG.G_URL_defaultQx2ClashBackend + '/upload', 
+        url: G_CONFIG.G_URL_defaultQx2ClashBackendUpload, 
         callback: (res) => {
           if (res) return upload.onSuccess();
           upload.onError();
@@ -698,37 +695,53 @@ export default {
     },
 
     handlerMakeQx2clash () {
-      const loading = this.$loading({
-        lock: true,
-        text: 'Loading',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      });
-
+      this.loading = true;
       this.$axios
-        .post(G_CONFIG.G_URL_defaultQx2ClashBackend + '/make', this.form, {
-          header:{
-            "Content-Type": "application/form-data; charset=utf-8"
-          }
-        })
+        .post(G_CONFIG.G_URL_defaultQx2ClashBackendGenerate)
         .then(res => {
           if (res.data.code === 0 && res.data.data.url !== "") {
-            this.$message.success(
-              "配置文件已生产，配置链接已复制到剪贴板，有效期三个月望知悉"
-            );
+            this.$message.success("远程配置文件已生成");
 
-            this.customSubUrl = res.data.data.url;
-            this.$copyText(this.customSubUrl);
-            this.$message.success("定制订阅已复制到剪贴板");
+            this.form.remoteConfig = G_CONFIG.G_URL_defaultQx2ClashBackend + res.data.data.url;
+            
+            const serverList = res.data.data.serverList;
+            if (serverList.length) {
+              this.form.sourceSubUrl = serverList.join('\n');
+              this.saveSubUrl();
+            }
           } else {
-            this.$message.error("生产配置失败: " + res.data.msg);
+            this.$message.error("配置生成失败: " + res.data.msg);
           }
         })
         .catch(() => {
-          this.$message.error("生产配置失败");
+          this.$message.error("配置生成失败");
         })
         .finally(() => {
-          loading.close();
+          this.loading = false;
+        });
+    },
+
+    handleSubYaml () {
+      this.loading = true;
+      this.$axios
+        .post(G_CONFIG.G_URL_defaultQx2ClashBackendLocalyaml, {
+          sublink: this.customSubUrl
+        })
+        .then(res => {
+          if (res.data.code === 0 && res.data.data.url !== "") {
+            this.$message.success("远程配置文件已生成，配置链接已复制到剪贴板，有效期三个月望知悉");
+            
+            console.log(res.data.data.url);
+            this.$copyText(res.data.data.url);
+          } else {
+            this.$message.error("配置生成失败: " + res.data.msg);
+          }
+        })
+        .catch(() => {
+          this.$message.error("配置生成失败");
+        })
+        .finally(() => {
+          this.loading = false;
         });
     }
   }
