@@ -797,7 +797,6 @@ export default {
     },
 
     handleReplaceRules (type) {
-      console.log(this)
       if (type) {
         this.makeQx2clashForm.replaceRules.push({
           prefix: '',
