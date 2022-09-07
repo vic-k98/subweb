@@ -57,7 +57,7 @@
                   type="textarea"
                   rows="3"
                   placeholder="支持订阅或ss/ssr/vmess链接，多个链接每行一个或用 | 分隔"
-                  @blur="saveSubUrl"
+                  @blur="handleSaveSubUrl"
                 />
               </el-form-item>
 
@@ -123,7 +123,11 @@
                 </el-form-item>
 
                 <el-form-item label="Exclude:">
-                  <el-input v-model="form.excludeRemarks" placeholder="节点名不包含的关键字，支持正则" />
+                  <el-input
+                    v-model="form.excludeRemarks"
+                    placeholder="节点名不包含的关键字，支持正则"
+                    @blur="handleSaveExclude"
+                  />
                 </el-form-item>
 
                 <el-form-item label="FileName:">
@@ -311,7 +315,6 @@ export default {
     return {
       backendVersion: "",
       advanced: "1",
-      isPC: true,
 
       options: {
         clientTypes: [],
@@ -321,7 +324,7 @@ export default {
 
       form: {
         sourceSubUrl: "",
-        clientType: "",
+        clientType: 'clash&new_name=true',
         customBackend: "",
         remoteConfig: "",
         excludeRemarks: "",
@@ -363,35 +366,18 @@ export default {
     };
   },
 
-  async created() {
-    // 查询并设置配置
-    G_CONFIG = await queryConfig.bind(this)()
-
-    // data 属性绑定
-    this.options.clientTypes = G_CONFIG.G_clientTypes
-    this.options.customBackendOptions = G_CONFIG.G_customBackendOptions
-    this.options.remoteConfig = G_CONFIG.G_remoteConfig
-    this.sampleConfig =  G_CONFIG.G_URL_remoteConfigSample;
-
-    this.form.clientType = "clash&new_name=true";
-    document.title = "Subscription Converter";
-    this.isPC = this.$getOS().isPc;
-    this.getBackendVersion();
-
-    // url 控制模式
-    const { advanced } = this.$route.query;
-    if (['1', '2', '3'].includes(advanced + '')) {
-      this.advanced = advanced;
+  watch: {
+    advanced (newValue) {
+      const { advanced } = this.$route.query;
+      if (newValue !== advanced) {
+        this.$router.push({
+          name: 'Qx2clash',
+          query: {
+            advanced: newValue
+          }
+        })
+      }
     }
-
-    // 获取 url cache
-    if (process.env.VUE_APP_USE_STORAGE === 'true') {
-      this.form.sourceSubUrl = this.getLocalStorageItem('sourceSubUrl')
-    }
-  },
-
-  mounted() {
-    this.notify();
   },
 
   methods: {
@@ -430,6 +416,7 @@ export default {
       const url = "surge://install-config?url=";
       window.open(url + this.customSubUrl);
     },
+
     makeUrl() {
       if (this.form.sourceSubUrl === "" || this.form.clientType === "") {
         this.$message.error("订阅链接与客户端为必填项");
@@ -510,6 +497,7 @@ export default {
       this.$copyText(this.customSubUrl);
       this.$message.success("定制订阅已复制到剪贴板");
     },
+
     makeShortUrl() {
       if (this.customSubUrl === "") {
         this.$message.warning("请先生成订阅链接，再获取对应短链接");
@@ -585,7 +573,8 @@ export default {
         );
       };
     },
-    getBackendVersion() {
+
+    queryBackendVersion() {
       this.$axios
         .get(
           G_CONFIG.G_URL_defaultBackendVerson
@@ -597,11 +586,7 @@ export default {
           }
         });
     },
-    saveSubUrl() {
-      if (this.form.sourceSubUrl !== '') {
-        this.setLocalStorageItem('sourceSubUrl', this.form.sourceSubUrl)
-      }
-    },
+
     getLocalStorageItem(itemKey) {
       const now = +new Date()
       let ls = localStorage.getItem(itemKey)
@@ -618,6 +603,7 @@ export default {
 
       return itemValue
     },
+
     setLocalStorageItem(itemKey, itemValue) {
       const ttl = process.env.VUE_APP_CACHE_TTL
       const now = +new Date()
@@ -629,6 +615,18 @@ export default {
         value: itemValue
       }
       localStorage.setItem(itemKey, JSON.stringify(data))
+    },
+
+    handleSaveSubUrl() {
+      if (this.form.sourceSubUrl !== '') {
+        this.setLocalStorageItem('sourceSubUrl', this.form.sourceSubUrl)
+      }
+    },
+
+    handleSaveExclude() {
+      if (this.form.excludeRemarks !== '') {
+        this.setLocalStorageItem('excludeRemarks', this.form.excludeRemarks)
+      }
     },
 
     handlerUploadFn ({ data, url = G_CONFIG.G_URL_configUploadBackend, callback }) {
@@ -706,7 +704,7 @@ export default {
             const serverList = res.data.data.serverList;
             if (serverList.length) {
               this.form.sourceSubUrl = serverList.join('\n');
-              this.saveSubUrl();
+              this.handleSaveSubUrl();
             }
           } else {
             this.$message.error("配置生成失败: " + res.data.msg);
@@ -746,6 +744,43 @@ export default {
         .finally(() => {
           loading.close();
         });
+    }
+  },
+
+  async created() {
+    document.title = "Subscription Converter";
+
+    // 默认路由
+    const { advanced } = this.$route.query;
+    if (![1, 2, 3].includes(+advanced)) {
+      return this.$router.push({
+        name: 'Qx2clash',
+        query: {
+          advanced: 1
+        }
+      })
+    }
+    this.advanced = advanced;
+
+    // 查询并设置配置
+    G_CONFIG = await queryConfig.bind(this)()
+
+    // data 属性绑定
+    this.options.clientTypes = G_CONFIG.G_clientTypes
+    this.options.customBackendOptions = G_CONFIG.G_customBackendOptions
+    this.options.remoteConfig = G_CONFIG.G_remoteConfig
+    this.sampleConfig =  G_CONFIG.G_URL_remoteConfigSample;
+
+    this.queryBackendVersion();
+  },
+
+  mounted() {
+    this.notify();
+
+    // 获取 cache
+    if (process.env.VUE_APP_USE_STORAGE === 'true') {
+      this.form.sourceSubUrl = this.getLocalStorageItem('sourceSubUrl');
+      this.form.excludeRemarks = this.getLocalStorageItem('excludeRemarks');
     }
   }
 };

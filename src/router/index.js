@@ -4,13 +4,13 @@ import VueRouter from "vue-router";
 Vue.use(VueRouter);
 
 const routes = [
+  // {
+  //   path: "/",
+  //   name: "SubConverter",
+  //   component: () => import("../views/Subconverter.vue")
+  // },
   {
     path: "/",
-    name: "SubConverter",
-    component: () => import("../views/Subconverter.vue")
-  },
-  {
-    path: "/Qx2clash",
     name: "Qx2clash",
     component: () => import("../views/Qx2clash.vue")
   }
