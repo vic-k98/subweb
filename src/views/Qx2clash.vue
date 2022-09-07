@@ -48,6 +48,53 @@
                     <!-- <div slot="tip" class="el-upload__tip">只能上传.conf文件, 默认取第一个上传成功的文件</div> -->
                   </el-upload>
                 </el-form-item>
+
+                <el-form-item label="配置文件:" >
+                  <el-row
+                    v-for="(item, index) in makeQx2clashForm.replaceRules"
+                    :key="index" 
+                    :style="{
+                      marginBottom: index >= makeQx2clashForm.replaceRules.length - 1 ? '0' : '10px',
+                      marginLeft: '0',
+                    }"
+                    :gutter="22"
+                  >
+                    <el-col
+                      :span="10"
+                      :style="{
+                        paddingLeft: '0'
+                      }"
+                    >
+                      <el-input
+                        v-model="item.prefix"
+                        placeholder="替换后的前缀"
+                      />
+                    </el-col>
+                    <el-col :span="8">
+                      <el-input
+                        v-model="item.reg"
+                        placeholder="替换规则正则，匹配需要替换前缀的位置"
+                      />
+                    </el-col>
+                    <el-col :span="4">
+                      <template v-if="index >= makeQx2clashForm.replaceRules.length - 1">
+                        <el-button
+                          v-if="index < 2"
+                          type="success"
+                          icon="el-icon-plus"
+                          circle @click="handleReplaceRules(1)"
+                        ></el-button>
+                        <el-button 
+                          v-if="index > 0"
+                          type="danger"
+                          icon="el-icon-minus"
+                          circle
+                          @click="handleReplaceRules(0)"
+                        ></el-button>
+                      </template>
+                    </el-col>
+                  </el-row>
+                </el-form-item>
               </template>
 
               <!-- 基础配置 -->
@@ -324,7 +371,7 @@ export default {
 
       form: {
         sourceSubUrl: "",
-        clientType: 'clash&new_name=true',
+        clientType: "",
         customBackend: "",
         remoteConfig: "",
         excludeRemarks: "",
@@ -353,6 +400,9 @@ export default {
         }
       },
 
+      makeQx2clashForm: {
+        replaceRules: []
+      },
       configFileList: [],
   
       loading: false,
@@ -385,10 +435,10 @@ export default {
       this.$message.success("Copied!");
     },
     goToProject() {
-      window.open(G_CONFIG.G_URL_project);
+      window.open(G_CONFIG.project);
     },
     gotoGayhub() {
-      window.open(G_CONFIG.G_URL_gayhubRelease);
+      window.open(G_CONFIG.gayhubRelease);
     },
 
     clashInstall() {
@@ -425,7 +475,7 @@ export default {
 
       let backend =
         this.form.customBackend === ""
-          ? G_CONFIG.G_URL_defaultBackendSub
+          ? G_CONFIG.backendSub
           : this.form.customBackend;
 
       let sourceSub = this.form.sourceSubUrl;
@@ -510,7 +560,7 @@ export default {
       data.append("longUrl", btoa(this.customSubUrl));
 
       this.$axios
-        .post(G_CONFIG.G_URL_shortUrlBackend, data, {
+        .post(G_CONFIG.shortUrlBackend, data, {
           header: {
             "Content-Type": "application/form-data; charset=utf-8"
           }
@@ -577,7 +627,7 @@ export default {
     queryBackendVersion() {
       this.$axios
         .get(
-          G_CONFIG.G_URL_defaultBackendVerson
+          G_CONFIG.backendVerson
         )
         .then(res => {
           if (res.data.indexOf('<') <= -1) {
@@ -629,7 +679,7 @@ export default {
       }
     },
 
-    handlerUploadFn ({ data, url = G_CONFIG.G_URL_configUploadBackend, callback }) {
+    handlerUploadFn ({ data, url = G_CONFIG.configUploadBackend, callback }) {
       this.loading = true;
       this.$axios
         .post(url, data, {
@@ -683,7 +733,7 @@ export default {
 
       this.handlerUploadFn({
         data,
-        url: G_CONFIG.G_URL_defaultQx2ClashBackendUpload, 
+        url: G_CONFIG.qx2ClashBackendUpload, 
         callback: (res) => {
           if (res) return upload.onSuccess();
           upload.onError();
@@ -694,12 +744,12 @@ export default {
     handlerMakeQx2clash () {
       this.loading = true;
       this.$axios
-        .post(G_CONFIG.G_URL_defaultQx2ClashBackendGenerate)
+        .post(G_CONFIG.qx2ClashBackendGenerate, this.makeQx2clashForm)
         .then(res => {
           if (res.data.code === 0 && res.data.data.url !== "") {
             this.$message.success("远程配置文件已生成");
 
-            this.form.remoteConfig = G_CONFIG.G_URL_defaultQx2ClashBackend + res.data.data.url;
+            this.form.remoteConfig = G_CONFIG.qx2ClashBackend + res.data.data.url;
             
             const serverList = res.data.data.serverList;
             if (serverList.length) {
@@ -726,7 +776,7 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)'
       });
       this.$axios
-        .post(G_CONFIG.G_URL_defaultQx2ClashBackendLocalyaml, {
+        .post(G_CONFIG.qx2ClashBackendLocalyaml, {
           sublink: this.customSubUrl
         })
         .then(res => {
@@ -744,12 +794,22 @@ export default {
         .finally(() => {
           loading.close();
         });
+    },
+
+    handleReplaceRules (type) {
+      console.log(this)
+      if (type) {
+        this.makeQx2clashForm.replaceRules.push({
+          prefix: '',
+          reg: ''
+        });
+      } else {
+        this.makeQx2clashForm.replaceRules.pop();
+      }
     }
   },
 
   async created() {
-    document.title = "Subscription Converter";
-
     // 默认路由
     const { advanced } = this.$route.query;
     if (![1, 2, 3].includes(+advanced)) {
@@ -766,10 +826,16 @@ export default {
     G_CONFIG = await queryConfig.bind(this)()
 
     // data 属性绑定
-    this.options.clientTypes = G_CONFIG.G_clientTypes
-    this.options.customBackendOptions = G_CONFIG.G_customBackendOptions
-    this.options.remoteConfig = G_CONFIG.G_remoteConfig
-    this.sampleConfig =  G_CONFIG.G_URL_remoteConfigSample;
+    this.options.clientTypes = G_CONFIG.clientTypes
+    this.options.customBackendOptions = G_CONFIG.customBackendOptions
+    this.options.remoteConfig = G_CONFIG.remoteConfig
+    this.sampleConfig =  G_CONFIG.remoteConfigSample;
+
+    // 默认值
+    const formDefault = G_CONFIG.formDefault;
+    document.title = formDefault.pageTitle;
+    this.form.clientType = formDefault.clientType;
+    this.makeQx2clashForm.replaceRules = formDefault.replaceRules;
 
     this.queryBackendVersion();
   },

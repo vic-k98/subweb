@@ -318,10 +318,10 @@ export default {
     G_CONFIG = await queryConfig.bind(this)()
 
     // data 属性绑定
-    this.options.clientTypes = G_CONFIG.G_clientTypes
-    this.options.customBackendOptions = G_CONFIG.G_customBackendOptions
-    this.options.remoteConfig = G_CONFIG.G_remoteConfig
-    this.sampleConfig =  G_CONFIG.G_URL_remoteConfigSample;
+    this.options.clientTypes = G_CONFIG.clientTypes
+    this.options.customBackendOptions = G_CONFIG.customBackendOptions
+    this.options.remoteConfig = G_CONFIG.remoteConfig
+    this.sampleConfig =  G_CONFIG.remoteConfigSample;
 
     this.form.clientType = "clash&new_name=true";
     document.title = "Subscription Converter";
@@ -343,13 +343,13 @@ export default {
       this.$message.success("Copied!");
     },
     goToProject() {
-      window.open(G_CONFIG.G_URL_project);
+      window.open(G_CONFIG.project);
     },
     gotoGayhub() {
-      window.open(G_CONFIG.G_URL_gayhubRelease);
+      window.open(G_CONFIG.gayhubRelease);
     },
     gotoRemoteConfig() {
-      window.open(G_CONFIG.G_URL_remoteConfigSample);
+      window.open(G_CONFIG.remoteConfigSample);
     },
     clashInstall() {
       if (this.customSubUrl === "") {
@@ -384,7 +384,7 @@ export default {
 
       let backend =
         this.form.customBackend === ""
-          ? G_CONFIG.G_URL_defaultBackendSub
+          ? G_CONFIG.backendSub
           : this.form.customBackend;
 
       let sourceSub = this.form.sourceSubUrl;
@@ -468,7 +468,7 @@ export default {
       data.append("longUrl", btoa(this.customSubUrl));
 
       this.$axios
-        .post(G_CONFIG.G_URL_shortUrlBackend, data, {
+        .post(G_CONFIG.shortUrlBackend, data, {
           header: {
             "Content-Type": "application/form-data; charset=utf-8"
           }
@@ -515,7 +515,7 @@ export default {
       data.append("config", this.uploadConfig);
 
       this.$axios
-        .post(G_CONFIG.G_URL_configUploadBackend, data, {
+        .post(G_CONFIG.configUploadBackend, data, {
           header: {
             "Content-Type": "application/form-data; charset=utf-8"
           }
@@ -562,7 +562,7 @@ export default {
     getBackendVersion() {
       this.$axios
         .get(
-          G_CONFIG.G_URL_defaultBackendVerson
+          G_CONFIG.backendVerson
         )
         .then(res => {
           if (res.data.indexOf('<') <= -1) {

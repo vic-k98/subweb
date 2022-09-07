@@ -1,18 +1,18 @@
-// 环境配置
-const G_URL_project = process.env.VUE_APP_PROJECT
-const G_URL_remoteConfigSample = process.env.VUE_APP_SUBCONVERTER_REMOTE_CONFIG
-const G_URL_gayhubRelease = process.env.VUE_APP_BACKEND_RELEASE
-const G_URL_shortUrlBackend = process.env.VUE_APP_MYURLS_DEFAULT_BACKEND + '/short'
-const G_URL_configUploadBackend = process.env.VUE_APP_CONFIG_UPLOAD_BACKEND + '/config/upload'
-const G_URL_defaultBackendSub = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/sub?'
-const G_URL_defaultBackendVerson = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/version'
-const G_URL_defaultQx2ClashBackend = process.env.VUE_APP_QX2CLASH_DEFAULT_BACKEND
-const G_URL_defaultQx2ClashBackendUpload = G_URL_defaultQx2ClashBackend + '/api/upload'
-const G_URL_defaultQx2ClashBackendGenerate = G_URL_defaultQx2ClashBackend + '/api/generate'
-const G_URL_defaultQx2ClashBackendLocalyaml = G_URL_defaultQx2ClashBackend + '/api/subyaml'
+// url 相关配置
+const project = process.env.VUE_APP_PROJECT
+const remoteConfigSample = process.env.VUE_APP_SUBCONVERTER_REMOTE_CONFIG
+const gayhubRelease = process.env.VUE_APP_BACKEND_RELEASE
+const shortUrlBackend = process.env.VUE_APP_MYURLS_DEFAULT_BACKEND + '/short'
+const configUploadBackend = process.env.VUE_APP_CONFIG_UPLOAD_BACKEND + '/config/upload'
+const backendSub = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/sub?'
+const backendVerson = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/version'
+const qx2ClashBackend = process.env.VUE_APP_QX2CLASH_DEFAULT_BACKEND
+const qx2ClashBackendUpload = qx2ClashBackend + '/api/upload'
+const qx2ClashBackendGenerate = qx2ClashBackend + '/api/generate'
+const qx2ClashBackendLocalyaml = qx2ClashBackend + '/api/subyaml'
 
 
-const G_clientTypes = {
+const clientTypes = {
   "Clash新参数": "clash&new_name=true",
   "ClashR新参数": "clashr&new_name=true",
   Clash: "clash",
@@ -31,7 +31,7 @@ const G_clientTypes = {
   Surge2: "surge&ver=2"
 }
 
-const G_customBackendOptions = {
+const customBackendOptions = {
   [`本地服务(${window.location.hostname})`]: `${window.location.protocol}//${window.location.hostname}:25500/sub?`,
   "sub.id9.cc(品云提供-稳定)": "https://sub.id9.cc/sub?",
   "sub.xeton.dev(subconverter作者提供-稳定)": "https://sub.xeton.dev/sub?",
@@ -39,7 +39,7 @@ const G_customBackendOptions = {
   "sub.maoxiongnet.com(猫熊提供-稳定)": "https://sub.maoxiongnet.com/sub?"
 }
 
-const G_remoteConfig = [
+const remoteConfig = [
   {
     label: "universal",
     options: [
@@ -113,23 +113,35 @@ const G_remoteConfig = [
 ]
 
 const G_URL = {
-  G_URL_project,
-  G_URL_remoteConfigSample,
-  G_URL_gayhubRelease,
-  G_URL_shortUrlBackend,
-  G_URL_configUploadBackend,
-  G_URL_defaultBackendSub,
-  G_URL_defaultBackendVerson,
-  G_URL_defaultQx2ClashBackend,
-  G_URL_defaultQx2ClashBackendUpload,
-  G_URL_defaultQx2ClashBackendGenerate,
-  G_URL_defaultQx2ClashBackendLocalyaml
+  project,
+  remoteConfigSample,
+  gayhubRelease,
+  shortUrlBackend,
+  configUploadBackend,
+  backendSub,
+  backendVerson,
+  qx2ClashBackend,
+  qx2ClashBackendUpload,
+  qx2ClashBackendGenerate,
+  qx2ClashBackendLocalyaml
+}
+
+const formDefault = {
+  pageTitle: "Subscription Converter",
+  clientType: "clash&new_name=true",
+  replaceRules: [
+    {
+      prefix: 'http://192.168.31.99:5500/ios_rule_script/',
+      reg: '^(.+)rule/QuantumultX(.+)$'
+    }
+  ]
 }
 
 export const G_DEFAULT_CONFIG = {
-  G_clientTypes,
-  G_customBackendOptions,
-  G_remoteConfig,
+  clientTypes,
+  customBackendOptions,
+  remoteConfig,
+  formDefault,
   ...G_URL
 }
 
@@ -142,9 +154,10 @@ export function queryConfig () {
         if (res.data && res.data.version) {
           resolve({
             ...Object.assign({}, G_URL, res.data.G_URL),
-            G_clientTypes: Object.assign({}, G_clientTypes, res.data.G_clientTypes || {}),
-            G_customBackendOptions: Object.assign({}, G_customBackendOptions, res.data.G_customBackendOptions || {}),
-            G_remoteConfig: Object.assign({}, G_remoteConfig, res.data.G_remoteConfig || []),
+            clientTypes: Object.assign({}, clientTypes, res.data.clientTypes || {}),
+            customBackendOptions: Object.assign({}, customBackendOptions, res.data.customBackendOptions || {}),
+            remoteConfig: Object.assign({}, remoteConfig, res.data.remoteConfig || []),
+            formDefault: Object.assign({}, formDefault, res.data.formDefault || {}),
           })
         } else {
           resolve(G_DEFAULT_CONFIG)
