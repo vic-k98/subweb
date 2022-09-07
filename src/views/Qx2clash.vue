@@ -57,10 +57,10 @@
                       marginBottom: index >= makeQx2clashForm.replaceRules.length - 1 ? '0' : '10px',
                       marginLeft: '0',
                     }"
-                    :gutter="22"
+                    :gutter="24"
                   >
                     <el-col
-                      :span="10"
+                      :span="8"
                       :style="{
                         paddingLeft: '0'
                       }"
@@ -70,10 +70,16 @@
                         placeholder="替换后的前缀"
                       />
                     </el-col>
-                    <el-col :span="8">
+                    <el-col :span="6">
                       <el-input
                         v-model="item.reg"
                         placeholder="替换规则正则，匹配需要替换前缀的位置"
+                      />
+                    </el-col>
+                    <el-col :span="6">
+                      <el-input
+                        v-model="item.middle"
+                        placeholder="替换后的中间字符"
                       />
                     </el-col>
                     <el-col :span="4">
@@ -800,7 +806,8 @@ export default {
       if (type) {
         this.makeQx2clashForm.replaceRules.push({
           prefix: '',
-          reg: ''
+          reg: '',
+          middle: ''
         });
       } else {
         this.makeQx2clashForm.replaceRules.pop();
